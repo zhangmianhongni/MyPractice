@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="aws">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../CoreJavaBook/v2ch11/webService2/aws.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
