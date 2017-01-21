@@ -100,7 +100,10 @@ public class CommonPageProcessor implements PageProcessor {
                                 if (expressionType != ExpressionType.JsonPath) {
                                     page.putField(fieldName, extractContent.select(selector).toString());
                                 } else {
-
+                                    String expressionValue = field.getExpressionValue();
+                                    if(StringUtils.isNotEmpty(expressionValue)) {
+                                        page.putField(fieldName, extractContent.jsonPath(expressionValue).get());
+                                    }
                                 }
                             }
                         }
