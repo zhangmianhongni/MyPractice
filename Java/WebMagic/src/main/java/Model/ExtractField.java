@@ -1,5 +1,9 @@
 package model;
 
+import us.codecraft.webmagic.selector.JsonPathSelector;
+import us.codecraft.webmagic.selector.Selector;
+import static us.codecraft.webmagic.selector.Selectors.*;
+
 /**
  * Created by mian on 2017/1/12.
  * 抽取字段实体类
@@ -9,30 +13,23 @@ public class ExtractField {
     private String fieldName;
 
     //抽取字段来源，默认HTML内容
-    private FieldSourceType fieldSourceType = FieldSourceType.HTML;
+    private FieldSourceType fieldSourceType = FieldSourceType.Html;
 
     //是否必须字段，默认False
     private boolean isNeed = false;
 
-    //字段抽取类型，默认XPATH
-    private FieldExtractType fieldExtractType = FieldExtractType.XPATH;
+    //是否多个
+    private boolean multi = false;
 
-    //xpath
-    private String xPath;
+    //字段抽取表达式，默认XPath
+    private ExpressionType expressionType = ExpressionType.XPath;
 
-    //css选择器
-    private String cssSelector;
+    private String expressionValue;
 
-    //css选择器-属性，可选
-    private String cssSelectorAttr;
+    //表达式参数
+    private String[] expressionParams;
 
-    //正则表达式
-    private String regex;
-
-    //正则表达式捕获组，可选
-    private int regexGroup;
-
-
+    private volatile Selector selector;
 
 
 
@@ -61,53 +58,72 @@ public class ExtractField {
         this.isNeed = isNeed;
     }
 
-    public FieldExtractType getFieldExtractType() {
-        return fieldExtractType;
+    public boolean isMulti() {
+        return multi;
     }
 
-    public void setFieldExtractType(FieldExtractType fieldExtractType) {
-        this.fieldExtractType = fieldExtractType;
+    public void setMulti(boolean multi) {
+        this.multi = multi;
     }
 
-    public String getxPath() {
-        return xPath;
+    public ExpressionType getExpressionType() {
+        return expressionType;
     }
 
-    public void setxPath(String xPath) {
-        this.xPath = xPath;
+    public void setExpressionType(ExpressionType expressionType) {
+        this.expressionType = expressionType;
     }
 
-    public String getCssSelector() {
-        return cssSelector;
+    public String getExpressionValue() {
+        return expressionValue;
     }
 
-    public void setCssSelector(String cssSelector) {
-        this.cssSelector = cssSelector;
+    public void setExpressionValue(String expressionValue) {
+        this.expressionValue = expressionValue;
     }
 
-    public String getCssSelectorAttr() {
-        return cssSelectorAttr;
+    public String[] getExpressionParams() {
+        return expressionParams;
     }
 
-    public void setCssSelectorAttr(String cssSelectorAttr) {
-        this.cssSelectorAttr = cssSelectorAttr;
+    public void setExpressionParams(String[] expressionParams) {
+        this.expressionParams = expressionParams;
     }
 
-    public String getRegex() {
-        return regex;
+    public Selector getSelector() {
+        if (selector == null) {
+            synchronized (this) {
+                if (selector == null) {
+                    selector = compileSelector();
+                }
+            }
+        }
+        return selector;
     }
 
-    public void setRegex(String regex) {
-        this.regex = regex;
-    }
-
-    public int getRegexGroup() {
-        return regexGroup;
-    }
-
-    public void setRegexGroup(int regexGroup) {
-        this.regexGroup = regexGroup;
+    private Selector compileSelector() {
+        switch (expressionType) {
+            case Css:
+                if (expressionParams != null && expressionParams.length >= 1) {
+                    return $(expressionValue, expressionParams[0]);
+                } else {
+                    return $(expressionValue);
+                }
+            case XPath:
+                return xpath(expressionValue);
+            case Regex:
+                if (expressionParams != null && expressionParams.length >= 1) {
+                    return regex(expressionValue, Integer.parseInt(expressionParams[0]));
+                } else {
+                    return regex(expressionValue);
+                }
+            case JsonPath:
+                return new JsonPathSelector(expressionValue);
+            default:
+                return xpath(expressionValue);
+        }
     }
 }
+
 
 

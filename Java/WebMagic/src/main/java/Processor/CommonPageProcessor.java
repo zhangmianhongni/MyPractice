@@ -1,7 +1,7 @@
 package processor;
 
 import model.ExtractField;
-import model.FieldExtractType;
+import model.ExpressionType;
 import model.FieldSourceType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
@@ -11,6 +11,7 @@ import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
+import us.codecraft.webmagic.selector.Selector;
 
 import java.util.List;
 import java.util.Map;
@@ -68,55 +69,39 @@ public class CommonPageProcessor implements PageProcessor {
             for (ExtractField field : extractFields) {
                 if(field != null){
                     String fieldName = field.getFieldName();
-                    boolean isNeed = field.isNeed();
-                    FieldExtractType fieldExtractType = field.getFieldExtractType();
+                    ExpressionType expressionType = field.getExpressionType();
                     FieldSourceType fieldSourceType = field.getFieldSourceType();
+                    Selector selector = field.getSelector();
 
                     Selectable extractContent = null;
-                    if(fieldSourceType == FieldSourceType.HTML){
+                    if(fieldSourceType == FieldSourceType.Html){
                         extractContent = page.getHtml();
-                    }else if(fieldSourceType == FieldSourceType.URL){
+                    }else if(fieldSourceType == FieldSourceType.Url){
                         extractContent = page.getUrl();
-                    }else if(fieldSourceType == FieldSourceType.JSON){
+                    }else if(fieldSourceType == FieldSourceType.Json){
                         extractContent = page.getJson();
                     }
 
-                    if(extractContent != null) {
-                        if (fieldExtractType == FieldExtractType.XPATH) {
-                            String xPath = field.getxPath();
-                            if(StringUtils.isNotEmpty(xPath) && extractContent.xpath(xPath) != null) {
-                                page.putField(fieldName, extractContent.xpath(xPath).toString());
-                            }
-                        }else if(fieldExtractType == FieldExtractType.CSS){
-                            String cssSelector = field.getCssSelector();
-                            String cssSelectorAttr = field.getCssSelectorAttr();
-                            if(StringUtils.isEmpty(cssSelectorAttr)){
-                                if(StringUtils.isNotEmpty(cssSelector) && extractContent.css(cssSelector) != null) {
-                                    page.putField(fieldName, extractContent.css(cssSelector).toString());
-                                }
-                            }else{
-                                if(StringUtils.isNotEmpty(cssSelector) && extractContent.css(cssSelector, cssSelectorAttr) != null) {
-                                    page.putField(fieldName, extractContent.css(cssSelector, cssSelectorAttr).toString());
-                                }
-                            }
-                        }else if(fieldExtractType == FieldExtractType.REGEX){
-                            String regex = field.getRegex();
-                            int regexGroup = field.getRegexGroup();
-                            if(regexGroup == 0){
-                                if(StringUtils.isNotEmpty(regex) && extractContent.regex(regex) != null) {
-                                    page.putField(fieldName, extractContent.regex(regex).toString());
-                                }
-                            }else{
-                                if(StringUtils.isNotEmpty(regex) && extractContent.regex(regex, regexGroup) != null) {
-                                    page.putField(fieldName, extractContent.regex(regex, regexGroup).toString());
-                                }
-                            }
-                        }
-
-                        //如果是必须字段，字段内容为空的时候跳过这页面
-                        if(isNeed){
-                            if (page.getResultItems().get(fieldName) == null){
+                    if(extractContent != null && selector != null) {
+                        if (field.isMulti()) {
+                            List<String> results = page.getHtml().selectDocumentForList(field.getSelector());
+                            if (field.isNeed() && results.size() == 0) {
+                                //如果是必须字段，字段内容为空的时候跳过这页面
                                 page.setSkip(true);
+                            } else {
+                                page.getResultItems().put(field.getFieldName(), results);
+                            }
+                        }else{
+                            String result = extractContent.select(selector).toString();
+                            if (field.isNeed() && result == null) {
+                                //如果是必须字段，字段内容为空的时候跳过这页面
+                                page.setSkip(true);
+                            } else {
+                                if (expressionType != ExpressionType.JsonPath) {
+                                    page.putField(fieldName, extractContent.select(selector).toString());
+                                } else {
+
+                                }
                             }
                         }
                     }

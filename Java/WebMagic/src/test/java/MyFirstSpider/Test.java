@@ -1,7 +1,7 @@
 package myFirstSpider;
 
 import model.ExtractField;
-import model.FieldExtractType;
+import model.ExpressionType;
 import model.FieldSourceType;
 import processor.CommonPageProcessor;
 import us.codecraft.webmagic.Spider;
@@ -22,26 +22,26 @@ public class Test {
         List<ExtractField> extractFields = new ArrayList<ExtractField>();
         ExtractField field = new ExtractField();
         field.setFieldName("author");
-        field.setFieldSourceType(FieldSourceType.URL);
-        field.setFieldExtractType(FieldExtractType.REGEX);
-        field.setRegex("https://github\\.com/(\\w+)/.*");
+        field.setFieldSourceType(FieldSourceType.Url);
+        field.setExpressionType(ExpressionType.Regex);
+        field.setExpressionValue("https://github\\.com/(\\w+)/.*");
 
         extractFields.add(field);
 
         field = new ExtractField();
         field.setFieldName("name");
-        field.setFieldSourceType(FieldSourceType.HTML);
-        field.setFieldExtractType(FieldExtractType.XPATH);
-        field.setxPath("//h1[@class='public']/strong/a/text()");
+        field.setFieldSourceType(FieldSourceType.Html);
+        field.setExpressionType(ExpressionType.XPath);
+        field.setExpressionValue("//h1[@class='public']/strong/a/text()");
         field.setNeed(true);
 
         extractFields.add(field);
 
         field = new ExtractField();
         field.setFieldName("readme");
-        field.setFieldSourceType(FieldSourceType.HTML);
-        field.setFieldExtractType(FieldExtractType.XPATH);
-        field.setxPath("//div[@id='readme']/tidyText()");
+        field.setFieldSourceType(FieldSourceType.Html);
+        field.setExpressionType(ExpressionType.XPath);
+        field.setExpressionValue("//div[@id='readme']/tidyText()");
 
         extractFields.add(field);
 
