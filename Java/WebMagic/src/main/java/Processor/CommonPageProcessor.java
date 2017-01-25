@@ -1,5 +1,6 @@
 package processor;
 
+import model.Expression;
 import model.ExtractField;
 import model.ExpressionType;
 import model.FieldSourceType;
@@ -18,104 +19,40 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by mian on 2017/1/12.
  * 通用页面抽取处理类
  * PageProcessor的定制分为三个部分，分别是爬虫的配置、页面元素的抽取和链接的发现
+ * Created by mian on 2017/1/12.
  */
-public class CommonPageProcessor implements PageProcessor {
-    private Site site;
+public abstract class CommonPageProcessor implements PageProcessor {
+    Site site;
 
-    private String targetRequestCssSelector;
-    private String targetRequestRegex;
-    private List<ExtractField> extractFields;
-
-    public CommonPageProcessor(){
-        this.site = Site.me();
-    }
-
-    public void process(Page page) {
-
-        // 部分二：定义如何抽取页面信息，并保存下来
-        this.initExtractFields(page);
-
-        // 部分三：从页面发现后续的url地址来抓取
-        List<String> urls = this.initTargetRequests(page);
-        page.addTargetRequests(urls);
-    }
+    String targetRequestCssSelector;
+    String targetRequestRegex;
+    String pagedRequestCssSelector;
+    String pagedRequestRegex;
+    List<ExtractField> extractFields;
+    List<Expression> expressions;
 
     public Site getSite() {
         return this.site;
     }
 
-    private List<String> initTargetRequests(Page page){
-        List<String> urls = null;
-        if(StringUtils.isNotEmpty(this.targetRequestCssSelector) && StringUtils.isNotEmpty(this.targetRequestRegex)){
-            urls = page.getHtml().css(this.targetRequestCssSelector).links().regex(this.targetRequestRegex).all();
-        }
 
-        if(StringUtils.isNotEmpty(this.targetRequestCssSelector)){
-            urls = page.getHtml().css(this.targetRequestCssSelector).links().all();
-        }
 
-        if(StringUtils.isNotEmpty(this.targetRequestRegex)){
-            urls = page.getHtml().links().regex(this.targetRequestRegex).all();
-        }
-
-        return urls;
-    }
-
-    private void initExtractFields(Page page){
-        if(this.extractFields != null){
-            for (ExtractField field : extractFields) {
-                if(field != null){
-                    String fieldName = field.getFieldName();
-                    ExpressionType expressionType = field.getExpressionType();
-                    FieldSourceType fieldSourceType = field.getFieldSourceType();
-                    Selector selector = field.getSelector();
-
-                    Selectable extractContent = null;
-                    if(fieldSourceType == FieldSourceType.Html){
-                        extractContent = page.getHtml();
-                    }else if(fieldSourceType == FieldSourceType.Url){
-                        extractContent = page.getUrl();
-                    }else if(fieldSourceType == FieldSourceType.Json){
-                        extractContent = page.getJson();
-                    }
-
-                    if(extractContent != null && selector != null) {
-                        if (field.isMulti()) {
-                            List<String> results = page.getHtml().selectDocumentForList(field.getSelector());
-                            if (field.isNeed() && results.size() == 0) {
-                                //如果是必须字段，字段内容为空的时候跳过这页面
-                                page.setSkip(true);
-                            } else {
-                                page.getResultItems().put(field.getFieldName(), results);
-                            }
-                        }else{
-                            String result = extractContent.select(selector).toString();
-                            if (field.isNeed() && result == null) {
-                                //如果是必须字段，字段内容为空的时候跳过这页面
-                                page.setSkip(true);
-                            } else {
-                                if (expressionType != ExpressionType.JsonPath) {
-                                    page.putField(fieldName, extractContent.select(selector).toString());
-                                } else {
-                                    String expressionValue = field.getExpressionValue();
-                                    if(StringUtils.isNotEmpty(expressionValue)) {
-                                        page.putField(fieldName, extractContent.jsonPath(expressionValue).get());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public CommonPageProcessor setTargetRequests(String cssSelector, String urlRegex){
+    public CommonPageProcessor setTargetRequestsUrl(String cssSelector, String urlRegex){
         this.targetRequestCssSelector = cssSelector;
         this.targetRequestRegex = urlRegex;
+        return this;
+    }
+
+    public CommonPageProcessor setPagedRequestsUrl(String cssSelector, String urlRegex){
+        this.pagedRequestCssSelector = cssSelector;
+        this.pagedRequestRegex = urlRegex;
+        return this;
+    }
+
+    public CommonPageProcessor setTargetRequestExpressions(List<Expression> expressions){
+        this.expressions = expressions;
         return this;
     }
 
@@ -123,7 +60,6 @@ public class CommonPageProcessor implements PageProcessor {
         this.extractFields = extractFields;
         return this;
     }
-
 
 
     // 部分一：抓取网站的相关配置，包括编码、抓取间隔、重试次数等 Site属性

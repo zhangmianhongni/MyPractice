@@ -5,8 +5,8 @@ import us.codecraft.webmagic.selector.Selector;
 import static us.codecraft.webmagic.selector.Selectors.*;
 
 /**
- * Created by mian on 2017/1/12.
  * 抽取字段实体类
+ * Created by mian on 2017/1/12.
  */
 public class ExtractField {
     //字段名称

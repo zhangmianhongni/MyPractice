@@ -1,15 +1,17 @@
 package myFirstSpider;
 
+import model.Expression;
 import model.ExtractField;
 import model.ExpressionType;
 import model.FieldSourceType;
 import processor.CommonPageProcessor;
+import processor.SingleEntityPageProcessor;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.pipeline.ConsolePipeline;
 import us.codecraft.webmagic.pipeline.JsonFilePipeline;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by mian on 2017/1/12.
@@ -20,43 +22,50 @@ public class Test {
 
 
         List<ExtractField> extractFields = new ArrayList<ExtractField>();
+
         ExtractField field = new ExtractField();
-        field.setFieldName("author");
-        field.setFieldSourceType(FieldSourceType.Url);
-        field.setExpressionType(ExpressionType.Regex);
-        field.setExpressionValue("https://github\\.com/(\\w+)/.*");
-
-        extractFields.add(field);
-
-        field = new ExtractField();
-        field.setFieldName("name");
+        field.setFieldName("Author");
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//h1[@class='public']/strong/a/text()");
+        field.setExpressionValue("//a[@class='article-author-name']/text()");
         field.setNeed(true);
 
         extractFields.add(field);
 
         field = new ExtractField();
-        field.setFieldName("readme");
+        field.setFieldName("Content");
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//div[@id='readme']/tidyText()");
+        field.setExpressionValue("//div[@class='article article-text']/@data-text");
+
+        extractFields.add(field);
+
+        field = new ExtractField();
+        field.setFieldName("Time");
+        field.setFieldSourceType(FieldSourceType.Html);
+        field.setExpressionType(ExpressionType.XPath);
+        field.setExpressionValue("//span[@class='article-date']/text()");
 
         extractFields.add(field);
 
 
 
-        CommonPageProcessor processor = new CommonPageProcessor();
+        SingleEntityPageProcessor processor = new SingleEntityPageProcessor();
         processor.setRetryTimes(3);
         processor.setSleepTime(100);
         processor.setTimeOut(10000);
-        processor.setTargetRequests("div.js-pinned-repos-reorder-container", "(https://github\\.com/zhangmianhongni/\\w+)");
+
+        Expression expression = new Expression();
+        expression.setExpressionType(ExpressionType.Css);
+        expression.setArguments(new Object[] {"div.pager-content"});
+        processor.setTargetRequestExpressions(Arrays.asList(expression));
+
+        processor.setTargetRequestsUrl("div.pager-content", null);
         processor.setExtractFields(extractFields);
 
         Spider.create(processor)
-                //从"https://github.com/zhangmianhongni"开始抓
-                .addUrl("https://github.com/zhangmianhongni")
+                //从"http://baozoumanhua.com/text"开始抓
+                .addUrl("http://baozoumanhua.com/text")
                 .addPipeline(new ConsolePipeline())
                 //保存到JSON文件
                 .addPipeline(new JsonFilePipeline("D:\\webmagic\\"))
