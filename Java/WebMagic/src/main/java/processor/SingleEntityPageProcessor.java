@@ -13,6 +13,7 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
 import us.codecraft.webmagic.selector.Selector;
+import utils.ReflectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,10 +58,11 @@ public class SingleEntityPageProcessor extends CommonPageProcessor {
 
             for (Expression expression : expressions) {
                 try {
-                    Method method = linksSelectable.getClass().getSuperclass().getMethod("css");
-                    linksSelectable = (Selectable) method.invoke(linksSelectable, expression.getArguments());
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
+                    Method method = ReflectionUtils.findMethodWithSuperClass(linksSelectable.getClass(), "css", expression.getArguments().length);
+                    if(method != null) {
+                        linksSelectable = (Selectable) method.invoke(linksSelectable, expression.getArguments());
+                        System.out.println(linksSelectable);
+                    }
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
