@@ -21,7 +21,7 @@ public class ExtractField {
     //是否多个
     private boolean multi = false;
 
-    //字段抽取表达式，默认XPath
+    //表达式类型，默认XPath
     private ExpressionType expressionType = ExpressionType.XPath;
 
     private String expressionValue;

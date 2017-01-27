@@ -1,19 +1,19 @@
 package processor;
 
-import model.Expression;
-import model.ExtractField;
-import model.ExpressionType;
-import model.FieldSourceType;
-import org.apache.commons.lang.StringUtils;
+import model.*;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
-import us.codecraft.webmagic.selector.Selector;
+import utils.ReflectionUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,35 +24,51 @@ import java.util.Set;
  * Created by mian on 2017/1/12.
  */
 public abstract class CommonPageProcessor implements PageProcessor {
-    Site site;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    String targetRequestCssSelector;
-    String targetRequestRegex;
-    String pagedRequestCssSelector;
-    String pagedRequestRegex;
+    Site site;
     List<ExtractField> extractFields;
-    List<Expression> expressions;
+    private List<LinksExtractRule> linksExtractRules;
 
     public Site getSite() {
         return this.site;
     }
 
-
-
-    public CommonPageProcessor setTargetRequestsUrl(String cssSelector, String urlRegex){
-        this.targetRequestCssSelector = cssSelector;
-        this.targetRequestRegex = urlRegex;
-        return this;
+    //部分二：从页面发现后续的url地址来抓取，给子类在process调用
+    void extractTargetLinks(Page page){
+        if(this.linksExtractRules != null){
+            for (LinksExtractRule linksExtractRule : linksExtractRules) {
+                List<String> targetUrls = this.extractTargetRequests(page, linksExtractRule.getExpressions());
+                if(targetUrls != null) {
+                    page.addTargetRequests(targetUrls);
+                }
+            }
+        }
     }
 
-    public CommonPageProcessor setPagedRequestsUrl(String cssSelector, String urlRegex){
-        this.pagedRequestCssSelector = cssSelector;
-        this.pagedRequestRegex = urlRegex;
-        return this;
+    private List<String> extractTargetRequests(Page page, List<Expression> expressions){
+        List<String> urls = null;
+
+        if(expressions != null && !expressions.isEmpty()){
+            Selectable linksSelectable = page.getHtml();
+            try {
+                for (Expression expression : expressions) {
+                    Method method = ReflectionUtils.findMethodWithSuperClass(linksSelectable.getClass(), expression.getExpressionType().getMethodName(), expression.getArgumentCount());
+                    linksSelectable = (Selectable) method.invoke(linksSelectable, expression.getArguments());
+                }
+                urls = linksSelectable.all();
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                this.logger.warn("初始化页面Url出错", e);
+            }
+        }
+
+        return urls;
     }
 
-    public CommonPageProcessor setTargetRequestExpressions(List<Expression> expressions){
-        this.expressions = expressions;
+
+
+    public CommonPageProcessor setTargetRequestRules(List<LinksExtractRule> linksExtractRules){
+        this.linksExtractRules = linksExtractRules;
         return this;
     }
 
