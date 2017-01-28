@@ -39,8 +39,8 @@ public class MultiJsonFilePipeline extends FilePersistentBase implements Pipelin
 
         List<Map<String, Object>> results = new ArrayList<>();
 
-        if(resultItems.getAll().containsKey("isMultiItems") && (Boolean)resultItems.get("isMultiItems")){
-            results = resultItems.get("multiItems");
+        if(resultItems.getAll().containsKey(ResultUtils.IS_MULTI_ITEMS_STR) && (Boolean)resultItems.get(ResultUtils.IS_MULTI_ITEMS_STR)){
+            results = resultItems.get(ResultUtils.MULTI_ITEMS_STR);
         }else{
             results.add(resultItems.getAll());
         }

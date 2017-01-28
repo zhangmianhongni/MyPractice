@@ -2,27 +2,23 @@ package Sample;
 
 import model.*;
 import pipeline.MultiJsonFilePipeline;
-import pipeline.MultiFilePipeline;
 import processor.DetailPageProcessor;
+import processor.ListPageProcessor;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
 import us.codecraft.webmagic.pipeline.ConsolePipeline;
-import us.codecraft.webmagic.pipeline.FilePipeline;
-import us.codecraft.webmagic.pipeline.JsonFilePipeline;
 
 import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by mian on 2017/1/12.
  */
-public class DetailSample {
+public class ListSample {
     public static void main(String[] args) throws JMException {
-        //Spider.create(new GithubRepoPageProcessor()).addUrl("https://github.com/zhangmianhongni").thread(5).run();
-
-
         List<ExtractField> extractFields = new ArrayList<ExtractField>();
 
         ExtractField field = new ExtractField();
@@ -55,7 +51,7 @@ public class DetailSample {
 
 
 
-        DetailPageProcessor processor = new DetailPageProcessor();
+        ListPageProcessor processor = new ListPageProcessor();
         processor.setRetryTimes(3);
         processor.setSleepTime(100);
         processor.setTimeOut(10000);

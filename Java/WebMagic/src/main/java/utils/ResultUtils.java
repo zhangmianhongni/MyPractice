@@ -16,7 +16,10 @@ import java.util.Map;
 public class ResultUtils {
     private static Logger logger = LoggerFactory.getLogger(ResultUtils.class);
 
-    private static List<Map<String, Object>> splitMapList(Map<String, Object> mapList){
+    public static String IS_MULTI_ITEMS_STR = "isMultiItems";
+    public static String MULTI_ITEMS_STR = "multiItems";
+
+    public static List<Map<String, Object>> splitMapList(Map<String, Object> mapList){
         List<Map<String, Object>> results = new ArrayList<>();
         try {
             if (mapList.values().iterator().next() instanceof ArrayList) {

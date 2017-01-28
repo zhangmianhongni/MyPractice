@@ -1,4 +1,4 @@
-package processor;
+package ProcessorSample;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;

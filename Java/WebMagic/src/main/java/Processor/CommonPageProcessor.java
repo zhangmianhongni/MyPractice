@@ -11,6 +11,7 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
 import utils.ReflectionUtils;
+import utils.ResultUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -66,8 +67,8 @@ public abstract class CommonPageProcessor implements PageProcessor {
     }
 
     //如果捉取的是列表页面，设置为true
-    void setMutliItemsPage(Page page, boolean isMultiItems){
-        page.putField("isMultiItems", isMultiItems);
+    void setMultiItemsPage(Page page, boolean isMultiItems){
+        page.putField(ResultUtils.IS_MULTI_ITEMS_STR, isMultiItems);
     }
 
 

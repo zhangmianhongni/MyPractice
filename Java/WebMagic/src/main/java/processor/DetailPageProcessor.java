@@ -12,6 +12,7 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
 import us.codecraft.webmagic.selector.Selector;
+import utils.ExtractUtils;
 import utils.ReflectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,52 +44,47 @@ public class DetailPageProcessor extends CommonPageProcessor {
 
     private void extractFields(Page page){
         if(this.extractFields != null){
-            for (ExtractField field : extractFields) {
-                if(field != null){
-                    String fieldName = field.getFieldName();
-                    ExpressionType expressionType = field.getExpressionType();
-                    FieldSourceType fieldSourceType = field.getFieldSourceType();
-                    Selector selector = field.getSelector();
+            this.extractFields.stream().filter(field -> field != null).forEach(field -> {
+                String fieldName = field.getFieldName();
+                ExpressionType expressionType = field.getExpressionType();
+                FieldSourceType fieldSourceType = field.getFieldSourceType();
+                Selector selector = field.getSelector();
 
-                    Selectable extractContent = null;
-                    if(fieldSourceType == FieldSourceType.Html){
-                        extractContent = page.getHtml();
-                    }else if(fieldSourceType == FieldSourceType.Url){
-                        extractContent = page.getUrl();
-                    }else if(fieldSourceType == FieldSourceType.Json){
-                        extractContent = page.getJson();
-                    }
+                Selectable extractContent = ExtractUtils.getSelectable(page, fieldSourceType);
 
-                    if(extractContent != null && selector != null) {
-                        if (field.isMulti()) {
-                            List<String> results = page.getHtml().selectDocumentForList(field.getSelector());
-                            if (field.isNeed() && results.size() == 0) {
-                                //如果是必须字段，字段内容为空的时候跳过这页面
-                                page.setSkip(true);
-                            } else {
-                                page.putField(fieldName, results);
-                            }
-                        }else{
+                if (extractContent != null && selector != null) {
+                    if (field.isMulti()) {
+                        List<String> results = page.getHtml().selectDocumentForList(selector);
+                        if (field.isNeed() && results.size() == 0) {
+                            //如果是必须字段，字段内容为空的时候跳过这页面
+                            page.setSkip(true);
+                        } else {
+                            page.putField(fieldName, results);
+                        }
+                    } else {
+                        if (expressionType != ExpressionType.JsonPath) {
                             String result = extractContent.select(selector).toString();
                             if (field.isNeed() && result == null) {
                                 //如果是必须字段，字段内容为空的时候跳过这页面
                                 page.setSkip(true);
                             } else {
-                                if (expressionType != ExpressionType.JsonPath) {
-                                    page.putField(fieldName, extractContent.select(selector).toString());
+                                page.putField(fieldName, result);
+                            }
+                        } else {
+                            String expressionValue = field.getExpressionValue();
+                            if (StringUtils.isNotEmpty(expressionValue)) {
+                                String result = extractContent.jsonPath(expressionValue).get();
+                                if (field.isNeed() && result == null) {
+                                    //如果是必须字段，字段内容为空的时候跳过这页面
+                                    page.setSkip(true);
                                 } else {
-                                    String expressionValue = field.getExpressionValue();
-                                    if(StringUtils.isNotEmpty(expressionValue)) {
-                                        page.putField(fieldName, extractContent.jsonPath(expressionValue).get());
-                                    }
+                                    page.putField(fieldName, result);
                                 }
                             }
                         }
                     }
                 }
-            }
+            });
         }
     }
-
-
 }
