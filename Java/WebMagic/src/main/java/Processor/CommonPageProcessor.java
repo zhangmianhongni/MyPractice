@@ -66,6 +66,10 @@ public abstract class CommonPageProcessor implements PageProcessor {
         return urls;
     }
 
+    void addUrlField(Map<String, Object> fields, Page page){
+        fields.put(ResultUtils.URL_STR, page.getRequest().getUrl());
+    }
+
     //如果捉取的是列表页面，设置为true
     void setMultiItemsPage(Page page, boolean isMultiItems){
         page.putField(ResultUtils.IS_MULTI_ITEMS_STR, isMultiItems);

@@ -35,6 +35,7 @@ public class DetailPageProcessor extends CommonPageProcessor {
 
     public void process(Page page) {
 
+        super.addUrlField(page.getResultItems().getAll(), page);
         super.extractTargetLinks(page);
 
         // 部分三：定义如何抽取页面信息，并保存下来

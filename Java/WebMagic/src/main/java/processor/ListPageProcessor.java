@@ -60,6 +60,7 @@ public class ListPageProcessor extends CommonPageProcessor {
         if(mapList.size() > 0){
             multiItems = ResultUtils.splitMapList(mapList);
             if(multiItems != null && mapList.size() > 0){
+                multiItems.stream().filter(map -> map != null).forEach(map -> super.addUrlField(map, page));
                 page.putField(ResultUtils.MULTI_ITEMS_STR, multiItems);
             }
         }

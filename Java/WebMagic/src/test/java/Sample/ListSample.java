@@ -26,7 +26,6 @@ public class ListSample {
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
         field.setExpressionValue("//a[@class='article-author-name']/text()");
-        //field.setMulti(true);
         field.setNeed(true);
 
         extractFields.add(field);
@@ -36,7 +35,6 @@ public class ListSample {
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
         field.setExpressionValue("//div[@class='article article-text']/@data-text");
-        //field.setMulti(true);
 
         extractFields.add(field);
 
@@ -45,7 +43,6 @@ public class ListSample {
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
         field.setExpressionValue("//span[@class='article-date']/text()");
-        //field.setMulti(true);
 
         extractFields.add(field);
 

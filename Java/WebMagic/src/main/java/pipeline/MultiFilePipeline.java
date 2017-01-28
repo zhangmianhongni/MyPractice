@@ -38,18 +38,7 @@ public class MultiFilePipeline extends FilePersistentBase implements Pipeline {
     public void process(ResultItems resultItems, Task task) {
         String path = this.path + PATH_SEPERATOR + task.getUUID() + PATH_SEPERATOR;
 
-        List<Map<String, Object>> results = new ArrayList<>();
-
-        if(resultItems.getAll().containsKey(ResultUtils.IS_MULTI_ITEMS_STR) && (Boolean)resultItems.get(ResultUtils.IS_MULTI_ITEMS_STR)){
-            results = resultItems.get(ResultUtils.MULTI_ITEMS_STR);
-        }else{
-            results.add(resultItems.getAll());
-        }
-
-/*        if(resultItems.getAll() != null && resultItems.getAll().size() > 0) {
-            results = ResultUtils.getResultItemList(resultItems, resultItems.getAll().values().iterator().next() instanceof ArrayList);
-        }*/
-
+        List<Map<String, Object>> results = ResultUtils.parseResultItems(resultItems);
         if(results != null) {
             try {
                 for (int i = 0; i < results.size(); i++) {
