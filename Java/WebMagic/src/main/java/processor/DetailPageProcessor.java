@@ -66,7 +66,7 @@ public class DetailPageProcessor extends CommonPageProcessor {
                                 //如果是必须字段，字段内容为空的时候跳过这页面
                                 page.setSkip(true);
                             } else {
-                                page.getResultItems().put(fieldName, results);
+                                page.putField(fieldName, results);
                             }
                         }else{
                             String result = extractContent.select(selector).toString();

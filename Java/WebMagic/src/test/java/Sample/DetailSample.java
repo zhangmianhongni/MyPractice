@@ -1,11 +1,16 @@
-package myFirstSpider;
+package Sample;
 
 import model.*;
+import pipeline.MultiJsonFilePipeline;
+import pipeline.MultiFilePipeline;
 import processor.DetailPageProcessor;
 import us.codecraft.webmagic.Spider;
+import us.codecraft.webmagic.monitor.SpiderMonitor;
 import us.codecraft.webmagic.pipeline.ConsolePipeline;
+import us.codecraft.webmagic.pipeline.FilePipeline;
 import us.codecraft.webmagic.pipeline.JsonFilePipeline;
 
+import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -13,8 +18,8 @@ import java.util.*;
 /**
  * Created by mian on 2017/1/12.
  */
-public class Test {
-    public static void main(String[] args) {
+public class DetailSample {
+    public static void main(String[] args) throws JMException {
         //Spider.create(new GithubRepoPageProcessor()).addUrl("https://github.com/zhangmianhongni").thread(5).run();
 
 
@@ -78,14 +83,17 @@ public class Test {
         processor.setExtractFields(extractFields);
 
         LocalDateTime start = LocalDateTime.now();
-        Spider.create(processor)
+        Spider spider = Spider.create(processor)
                 //从"http://baozoumanhua.com/text"开始抓
                 .addUrl("http://baozoumanhua.com/text")
                 .addPipeline(new ConsolePipeline())
                 //保存到JSON文件
-                .addPipeline(new JsonFilePipeline("D:\\webmagic\\"))
-                .thread(5)
-                .run();
+                .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))
+                .thread(5);
+
+        SpiderMonitor.instance().register(spider);
+        spider.run();
+
         LocalDateTime end = LocalDateTime.now();
         Duration duration = Duration.between(start, end);
         System.out.println(duration.getSeconds());

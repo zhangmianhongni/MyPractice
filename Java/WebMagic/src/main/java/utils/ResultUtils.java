@@ -2,6 +2,7 @@ package utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.codecraft.webmagic.ResultItems;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,7 +16,7 @@ import java.util.Map;
 public class ResultUtils {
     private static Logger logger = LoggerFactory.getLogger(ResultUtils.class);
 
-    public static List<Map<String, Object>> splitMapList(Map<String, Object> mapList){
+    private static List<Map<String, Object>> splitMapList(Map<String, Object> mapList){
         List<Map<String, Object>> results = new ArrayList<>();
         try {
             if (mapList.values().iterator().next() instanceof ArrayList) {
@@ -34,6 +35,22 @@ public class ResultUtils {
             }
         }catch (Exception e){
             logger.warn("mapList转ListMap失败，value长度不一致！", e);
+        }
+
+        return results;
+    }
+
+    public static List<Map<String, Object>> getResultItemList(ResultItems resultItems, boolean isMultiItems){
+        List<Map<String, Object>> results;
+        if (isMultiItems) {
+            results = splitMapList(resultItems.getAll());
+            if (results == null || results.size() == 0) {
+                results = new ArrayList<>();
+                results.add(resultItems.getAll());
+            }
+        } else {
+            results = new ArrayList<>();
+            results.add(resultItems.getAll());
         }
 
         return results;

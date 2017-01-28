@@ -65,6 +65,10 @@ public abstract class CommonPageProcessor implements PageProcessor {
         return urls;
     }
 
+    //如果捉取的是列表页面，设置为true
+    void setMutliItemsPage(Page page, boolean isMultiItems){
+        page.putField("isMultiItems", isMultiItems);
+    }
 
 
     public CommonPageProcessor setTargetRequestRules(List<LinksExtractRule> linksExtractRules){

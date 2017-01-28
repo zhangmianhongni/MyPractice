@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import processor.CommonPageProcessor;
 import us.codecraft.webmagic.ResultItems;
+import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
 import us.codecraft.webmagic.utils.FilePersistentBase;
@@ -36,17 +38,18 @@ public class MultiJsonFilePipeline extends FilePersistentBase implements Pipelin
         String path = this.path + PATH_SEPERATOR + task.getUUID() + PATH_SEPERATOR;
 
         List<Map<String, Object>> results = new ArrayList<>();
-        if(resultItems.getAll() != null && resultItems.getAll().size() > 0) {
-            if (resultItems.getAll().values().iterator().next() instanceof ArrayList) {
-                results = ResultUtils.splitMapList(resultItems.getAll());
-                if (results == null || results.size() == 0) {
-                    results = new ArrayList<>();
-                    results.add(resultItems.getAll());
-                }
-            } else {
-                results.add(resultItems.getAll());
-            }
 
+        if(resultItems.getAll().containsKey("isMultiItems") && (Boolean)resultItems.get("isMultiItems")){
+            results = resultItems.get("multiItems");
+        }else{
+            results.add(resultItems.getAll());
+        }
+
+/*        if(resultItems.getAll() != null && resultItems.getAll().size() > 0) {
+            results = ResultUtils.getResultItemList(resultItems, resultItems.getAll().values().iterator().next() instanceof ArrayList);
+        }*/
+
+        if(results != null) {
             try {
                 for (int i = 0; i < results.size(); i++) {
                     String mark = results.size() == 1 ? "" : "-" + i;
