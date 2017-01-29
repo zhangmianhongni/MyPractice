@@ -30,11 +30,11 @@ public class ListPageProcessor extends CommonPageProcessor {
         super.extractTargetLinks(page);
 
         // 部分三：定义如何抽取页面信息，并保存下来
-        this.extractFields(page);
+        this.extractListFields(page);
 
     }
 
-    private void extractFields(Page page){
+    private void extractListFields(Page page){
 
         List<Map<String, Object>> multiItems;
         Map<String, Object> mapList = new LinkedHashMap<>();

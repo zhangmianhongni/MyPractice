@@ -1,6 +1,7 @@
 package Sample;
 
 import model.*;
+import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
 import processor.DetailPageProcessor;
 import processor.ListPageProcessor;
@@ -78,7 +79,7 @@ public class ListSample {
         Spider spider = Spider.create(processor)
                 //从"http://baozoumanhua.com/text"开始抓
                 .addUrl("http://baozoumanhua.com/text")
-                .addPipeline(new ConsolePipeline())
+                .addPipeline(new MultiConsolePipeline())
                 //保存到JSON文件
                 .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))
                 .thread(5);

@@ -1,5 +1,6 @@
 package processor;
 
+import Dao.MysqlDao;
 import model.*;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -42,6 +43,9 @@ public abstract class CommonPageProcessor implements PageProcessor {
                 List<String> targetUrls = this.extractTargetRequests(page, linksExtractRule.getExpressions());
                 if(targetUrls != null) {
                     page.addTargetRequests(targetUrls);
+                    if(linksExtractRule.getName().equals("detail")){
+                        targetUrls.stream().forEach(targetUrl -> MysqlDao.insertList(page.getUrl().toString(), targetUrl));
+                    }
                 }
             }
         }

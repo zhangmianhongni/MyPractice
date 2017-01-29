@@ -1,8 +1,16 @@
 package utils;
 
+import model.ExpressionType;
+import model.ExtractField;
+import model.FieldSourceType;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.ResultItems;
+import us.codecraft.webmagic.selector.Html;
+import us.codecraft.webmagic.selector.Selectable;
+import us.codecraft.webmagic.selector.Selector;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -56,5 +64,51 @@ public class ResultUtils {
             logger.warn("结果集转换失败失败！", e);
         }
         return results;
+    }
+
+    public static void extractDetailFields(Page page, List<ExtractField> extractFields){
+        if(extractFields != null){
+            extractFields.stream().filter(field -> field != null).forEach(field -> {
+                String fieldName = field.getFieldName();
+                ExpressionType expressionType = field.getExpressionType();
+                FieldSourceType fieldSourceType = field.getFieldSourceType();
+                Selector selector = field.getSelector();
+
+                Selectable extractContent = ExtractUtils.getSelectable(page, fieldSourceType);
+
+                if (extractContent != null && selector != null) {
+                    if (field.isMulti()) {
+                        List<String> results = page.getHtml().selectDocumentForList(selector);
+                        if (field.isNeed() && results.size() == 0) {
+                            //如果是必须字段，字段内容为空的时候跳过这页面
+                            page.setSkip(true);
+                        } else {
+                            page.putField(fieldName, results);
+                        }
+                    } else {
+                        if (expressionType != ExpressionType.JsonPath) {
+                            String result = extractContent.select(selector).toString();
+                            if (field.isNeed() && result == null) {
+                                //如果是必须字段，字段内容为空的时候跳过这页面
+                                page.setSkip(true);
+                            } else {
+                                page.putField(fieldName, result);
+                            }
+                        } else {
+                            String expressionValue = field.getExpressionValue();
+                            if (StringUtils.isNotEmpty(expressionValue)) {
+                                String result = extractContent.jsonPath(expressionValue).get();
+                                if (field.isNeed() && result == null) {
+                                    //如果是必须字段，字段内容为空的时候跳过这页面
+                                    page.setSkip(true);
+                                } else {
+                                    page.putField(fieldName, result);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 }
