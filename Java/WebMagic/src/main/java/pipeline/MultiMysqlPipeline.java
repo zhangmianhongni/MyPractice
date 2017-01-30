@@ -1,9 +1,10 @@
 package pipeline;
 
-import Dao.MysqlDao;
+import dao.MysqlDao;
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
+import utils.ExtractUtils;
 import utils.ResultUtils;
 
 import java.util.List;
@@ -23,12 +24,13 @@ public class MultiMysqlPipeline implements Pipeline {
                 String mark = results.size() == 1 ? "" : "-" + i;
                 System.out.println("get page: " + resultItems.getRequest().getUrl() + mark);
                 Map<String, Object> result = results.get(i);
-                if(result !=null && result.size() > 0) {
+                if(result != null && result.size() > 0) {
                     String url = result.get("url").toString();
+                    String sourceUrl = result.get(ExtractUtils.SOURCE_REQUEST_URL_STR).toString();
                     String author = result.get("Author").toString();
                     String content = result.get("Content").toString();
                     String time = result.get("Time").toString();
-                    MysqlDao.insertDetail(url, author, content, time);
+                    MysqlDao.insertDetail(sourceUrl, url, author, content, time);
                 }
             }
         }

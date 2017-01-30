@@ -1,4 +1,4 @@
-package UtilsTest;
+package utilsTest;
 
 /**
  * Created by mian on 2017/1/27.

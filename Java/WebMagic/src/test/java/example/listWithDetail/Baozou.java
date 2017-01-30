@@ -1,28 +1,24 @@
-package Sample;
+package example.listWithDetail;
 
 import model.*;
 import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
-import pipeline.MultiFilePipeline;
-import processor.DetailPageProcessor;
+import pipeline.MultiMysqlPipeline;
+import processor.ListWithDetailPageProcessor;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
-import us.codecraft.webmagic.pipeline.ConsolePipeline;
-import us.codecraft.webmagic.pipeline.FilePipeline;
-import us.codecraft.webmagic.pipeline.JsonFilePipeline;
 
 import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by mian on 2017/1/12.
  */
-public class DetailSample {
+public class Baozou {
     public static void main(String[] args) throws JMException {
-        //Spider.create(new GithubRepoPageProcessor()).addUrl("https://github.com/zhangmianhongni").thread(5).run();
-
 
         List<ExtractField> extractFields = new ArrayList<ExtractField>();
 
@@ -30,7 +26,7 @@ public class DetailSample {
         field.setFieldName("Author");
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//a[@class='article-author-name']/text()");
+        field.setExpressionValue("//[@class='article-author-name']/text()");
         //field.setMulti(true);
         field.setNeed(true);
 
@@ -55,16 +51,40 @@ public class DetailSample {
         extractFields.add(field);
 
 
+        //列表链接正则表达式，用来判断是列表的链接还是详情页的链接
+        String listLinksRegExp = "http://baozoumanhua\\.com/text";
 
-        DetailPageProcessor processor = new DetailPageProcessor();
+        ListWithDetailPageProcessor processor = new ListWithDetailPageProcessor(listLinksRegExp);
         processor.setRetryTimes(3);
-        processor.setSleepTime(100);
-        processor.setTimeOut(10000);
+        processor.setSleepTime(200);
+        processor.setTimeOut(30000);
 
-        List<Expression> expressions = new ArrayList<>();
         List<LinksExtractRule> rules = new ArrayList<>();
 
+        //详情页面链接规则
+        List<Expression> expressions = new ArrayList<>();
         Expression expression = new Expression();
+        expression.setExpressionType(ExpressionType.Css);
+        expression.setArguments(new Object[] {"div.articles"});
+        expressions.add(expression);
+
+        expression = new Expression();
+        expression.setExpressionType(ExpressionType.Links);
+        expressions.add(expression);
+
+        expression = new Expression();
+        expression.setExpressionType(ExpressionType.Regex);
+        expressions.add(expression);
+        expression.setArguments(new Object[] {"http://baozoumanhua\\.com/articles/\\d+"});
+
+        LinksExtractRule rule = new LinksExtractRule();
+        rule.setName("detail");
+        rule.setExpressions(expressions);
+        rules.add(rule);
+
+        //分页链接规则
+        expressions = new ArrayList<>();
+        expression = new Expression();
         expression.setExpressionType(ExpressionType.Css);
         expression.setArguments(new Object[] {"div.pager-content"});
         expressions.add(expression);
@@ -73,7 +93,7 @@ public class DetailSample {
         expression.setExpressionType(ExpressionType.Links);
         expressions.add(expression);
 
-        LinksExtractRule rule = new LinksExtractRule();
+        rule = new LinksExtractRule();
         rule.setName("paged");
         rule.setExpressions(expressions);
         rules.add(rule);
@@ -85,10 +105,11 @@ public class DetailSample {
         LocalDateTime start = LocalDateTime.now();
         Spider spider = Spider.create(processor)
                 //从"http://baozoumanhua.com/text"开始抓
-                .addUrl("http://baozoumanhua.com/text")
+                .addUrl("http://baozoumanhua.com/text/fresh?page=1")
                 .addPipeline(new MultiConsolePipeline())
                 //保存到JSON文件
                 .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))
+                .addPipeline(new MultiMysqlPipeline())
                 .thread(5);
 
         SpiderMonitor.instance().register(spider);

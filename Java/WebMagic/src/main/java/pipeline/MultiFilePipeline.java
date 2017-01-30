@@ -46,27 +46,29 @@ public class MultiFilePipeline extends FilePersistentBase implements Pipeline {
                     PrintWriter e = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.getFile(path + DigestUtils.md5Hex(resultItems.getRequest().getUrl()) + mark  + ".html")), "UTF-8"));
                     e.println("url:\t" + resultItems.getRequest().getUrl());
                     Map<String, Object> result = results.get(i);
-                    Iterator var5 = result.entrySet().iterator();
+                    if(result !=null && result.size() > 0) {
+                        Iterator var5 = result.entrySet().iterator();
 
-                    while (true) {
-                        while (var5.hasNext()) {
-                            Map.Entry entry = (Map.Entry) var5.next();
-                            if (entry.getValue() instanceof Iterable) {
-                                Iterable value = (Iterable) entry.getValue();
-                                e.println((String) entry.getKey() + ":");
-                                Iterator var8 = value.iterator();
+                        while (true) {
+                            while (var5.hasNext()) {
+                                Map.Entry entry = (Map.Entry) var5.next();
+                                if (entry.getValue() instanceof Iterable) {
+                                    Iterable value = (Iterable) entry.getValue();
+                                    e.println((String) entry.getKey() + ":");
+                                    Iterator var8 = value.iterator();
 
-                                while (var8.hasNext()) {
-                                    Object o = var8.next();
-                                    e.println(o);
+                                    while (var8.hasNext()) {
+                                        Object o = var8.next();
+                                        e.println(o);
+                                    }
+                                } else {
+                                    e.println((String) entry.getKey() + ":\t" + entry.getValue());
                                 }
-                            } else {
-                                e.println((String) entry.getKey() + ":\t" + entry.getValue());
                             }
-                        }
 
-                        e.close();
-                        break;
+                            e.close();
+                            break;
+                        }
                     }
                 }
             } catch (IOException var10) {

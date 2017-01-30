@@ -22,8 +22,10 @@ public class MultiConsolePipeline implements Pipeline {
                 String mark = results.size() == 1 ? "" : "-" + i;
                 System.out.println("get page: " + resultItems.getRequest().getUrl() + mark);
                 Map<String, Object> result = results.get(i);
-                for (Map.Entry<String, Object> entry : result.entrySet()) {
-                    System.out.println(entry.getKey() + ":\t" + entry.getValue());
+                if(result !=null && result.size() > 0) {
+                    for (Map.Entry<String, Object> entry : result.entrySet()) {
+                        System.out.println(entry.getKey() + ":\t" + entry.getValue());
+                    }
                 }
             }
         }

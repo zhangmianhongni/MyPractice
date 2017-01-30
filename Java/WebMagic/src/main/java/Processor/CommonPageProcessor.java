@@ -1,21 +1,24 @@
 package processor;
 
-import Dao.MysqlDao;
+import dao.MysqlDao;
 import model.*;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
+import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
+import utils.ExtractUtils;
 import utils.ReflectionUtils;
 import utils.ResultUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,19 +43,21 @@ public abstract class CommonPageProcessor implements PageProcessor {
     void extractTargetLinks(Page page){
         if(this.linksExtractRules != null){
             for (LinksExtractRule linksExtractRule : linksExtractRules) {
-                List<String> targetUrls = this.extractTargetRequests(page, linksExtractRule.getExpressions());
-                if(targetUrls != null) {
-                    page.addTargetRequests(targetUrls);
+                List<Request> targetRequests = this.extractTargetRequests(page, linksExtractRule.getExpressions());
+                if(targetRequests != null) {
+                    targetRequests.stream().forEach(page::addTargetRequest);
+
+                    //todo 临时测试
                     if(linksExtractRule.getName().equals("detail")){
-                        targetUrls.stream().forEach(targetUrl -> MysqlDao.insertList(page.getUrl().toString(), targetUrl));
+                        targetRequests.stream().forEach(targetRequest -> MysqlDao.insertList(page.getUrl().toString(), targetRequest.getUrl()));
                     }
                 }
             }
         }
     }
 
-    private List<String> extractTargetRequests(Page page, List<Expression> expressions){
-        List<String> urls = null;
+    private List<Request> extractTargetRequests(Page page, List<Expression> expressions){
+        List<Request> requests = new ArrayList<>();
 
         if(expressions != null && !expressions.isEmpty()){
             Selectable linksSelectable = page.getHtml();
@@ -61,13 +66,17 @@ public abstract class CommonPageProcessor implements PageProcessor {
                     Method method = ReflectionUtils.findMethodWithSuperClass(linksSelectable.getClass(), expression.getExpressionType().getMethodName(), expression.getArgumentCount());
                     linksSelectable = (Selectable) method.invoke(linksSelectable, expression.getArguments());
                 }
-                urls = linksSelectable.all();
+                linksSelectable.all().stream().forEach(url -> requests.add(new Request(url).putExtra(ExtractUtils.SOURCE_REQUEST_URL_STR, page.getUrl().toString())));
             } catch (InvocationTargetException | IllegalAccessException e) {
                 this.logger.warn("初始化页面Url出错", e);
             }
         }
 
-        return urls;
+        return requests;
+    }
+
+    private Request getRequest(String url, String sourceUrl){
+        return new Request(url).putExtra(ExtractUtils.SOURCE_REQUEST_URL_STR, sourceUrl);
     }
 
     void addUrlField(Map<String, Object> fields, Page page){

@@ -24,6 +24,8 @@ import java.util.List;
 public class ListWithDetailPageProcessor extends CommonPageProcessor {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private String listLinksRegExp;
+
+    //todo 测试用
     public List<String> linkList = new ArrayList<>();
     public List<String> detailList = new ArrayList<>();
 
@@ -39,6 +41,10 @@ public class ListWithDetailPageProcessor extends CommonPageProcessor {
             super.extractTargetLinks(page);
             linkList.add(page.getUrl().toString());
         } else {
+            String sourceUrl = page.getRequest().getExtra(ExtractUtils.SOURCE_REQUEST_URL_STR).toString();
+            if(StringUtils.isNotEmpty(sourceUrl)){
+                page.putField(ExtractUtils.SOURCE_REQUEST_URL_STR, sourceUrl);
+            }
             super.addUrlField(page.getResultItems().getAll(), page);
             ResultUtils.extractDetailFields(page, this.extractFields);
             detailList.add(page.getUrl().toString());

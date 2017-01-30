@@ -43,9 +43,11 @@ public class MultiJsonFilePipeline extends FilePersistentBase implements Pipelin
                 for (int i = 0; i < results.size(); i++) {
                     String mark = results.size() == 1 ? "" : "-" + i;
                     Map<String, Object> result = results.get(i);
-                    PrintWriter e = new PrintWriter(new FileWriter(this.getFile(path + DigestUtils.md5Hex(resultItems.getRequest().getUrl()) + mark + ".json")));
-                    e.write(JSON.toJSONString(result));
-                    e.close();
+                    if(result != null && result.size() > 0) {
+                        PrintWriter e = new PrintWriter(new FileWriter(this.getFile(path + DigestUtils.md5Hex(resultItems.getRequest().getUrl()) + mark + ".json")));
+                        e.write(JSON.toJSONString(result));
+                        e.close();
+                    }
                 }
             } catch (IOException var5) {
                 this.logger.warn("write file error", var5);

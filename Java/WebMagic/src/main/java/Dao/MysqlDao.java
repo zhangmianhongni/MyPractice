@@ -1,4 +1,4 @@
-package Dao;
+package dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -43,17 +43,18 @@ public class MysqlDao {
         return i;
     }
 
-    public static int insertDetail(String url, String author, String content, String time) {
+    public static int insertDetail(String sourceUrl, String url, String author, String content, String time) {
         Connection conn = getConn();
         int i = 0;
-        String sql = "insert into baozou (URL, AUTHOR, CONTENT , TIME) values(?,?,?,?)";
+        String sql = "insert into baozou (SOURCE_URL, URL, AUTHOR, CONTENT , TIME) values(?,?,?,?,?)";
         PreparedStatement stmt;
         try {
             stmt = conn.prepareStatement(sql);
-            stmt.setString(1, url);
-            stmt.setString(2, author);
-            stmt.setString(3, content);
-            stmt.setString(4, time);
+            stmt.setString(1, sourceUrl);
+            stmt.setString(2, url);
+            stmt.setString(3, author);
+            stmt.setString(4, content);
+            stmt.setString(5, time);
             i = stmt.executeUpdate();
             stmt.close();
             conn.close();

@@ -9,6 +9,8 @@ import us.codecraft.webmagic.selector.Selectable;
  * 抽取帮助类
  */
 public class ExtractUtils {
+    public static String SOURCE_REQUEST_URL_STR = "sourceRequestUrl";
+
     public static Selectable getSelectable(Page page, FieldSourceType fieldSourceType){
         Selectable extractContent = null;
         if(fieldSourceType == FieldSourceType.Html){

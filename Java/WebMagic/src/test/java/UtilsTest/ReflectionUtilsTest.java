@@ -1,4 +1,4 @@
-package UtilsTest;
+package utilsTest;
 
 import us.codecraft.webmagic.selector.Html;
 import utils.ReflectionUtils;
