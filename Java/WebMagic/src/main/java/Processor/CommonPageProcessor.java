@@ -1,8 +1,11 @@
 package processor;
 
+import constant.ExtractType;
 import dao.MysqlDao;
 import model.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.ProxyPool;
 import us.codecraft.webmagic.selector.Selectable;
+import us.codecraft.webmagic.utils.HttpConstant;
 import utils.ExtractUtils;
 import utils.ReflectionUtils;
 import utils.ResultUtils;
@@ -35,38 +39,60 @@ public abstract class CommonPageProcessor implements PageProcessor {
     List<ExtractField> extractFields;
     private List<LinksExtractRule> linksExtractRules;
 
+
+    public CommonPageProcessor(){
+        this.site = Site.me();
+    }
+
+    @Override
     public Site getSite() {
         return this.site;
     }
 
+    @Override
+    public void process(Page page) {
+        this.logger.debug("请求深度 {}", this.getCurDepth(page));
+        this.logger.debug("请求链接 {}", page.getUrl().toString());
+        this.doProcess(page);
+    }
+
+    abstract void doProcess(Page page);
+
     //部分二：从页面发现后续的url地址来抓取，给子类在process调用
     void extractTargetLinks(Page page){
+        List<Request> targetRequests = new ArrayList<>();
         if(this.linksExtractRules != null){
-            for (LinksExtractRule linksExtractRule : linksExtractRules) {
-                List<Request> targetRequests = this.extractTargetRequests(page, linksExtractRule.getExpressions());
-                if(targetRequests != null) {
-                    targetRequests.stream().forEach(page::addTargetRequest);
+            for (LinksExtractRule rule : linksExtractRules) {
+                if(rule.getExtractType() == ExtractType.Page) {
+                    List<Request> expressionRequests = this.extractTargetLinksByExp(page, rule);
+                    if (expressionRequests != null) {
+                        targetRequests.addAll(expressionRequests);
 
-                    //todo 临时测试
-                    if(linksExtractRule.getName().equals("detail")){
-                        targetRequests.stream().forEach(targetRequest -> MysqlDao.insertList(page.getUrl().toString(), targetRequest.getUrl()));
+                        //todo 临时测试
+                        if (rule.getName().equals("detail")) {
+                            expressionRequests.stream().forEach(targetRequest -> MysqlDao.insertList(page.getUrl().toString(), targetRequest.getUrl()));
+                        }
                     }
+                }else if(rule.getExtractType() == ExtractType.Api){
+                    targetRequests.add(this.getRequest(page.getUrl().toString(), page, rule));
                 }
             }
+            targetRequests.stream().forEach(page::addTargetRequest);
         }
     }
 
-    private List<Request> extractTargetRequests(Page page, List<Expression> expressions){
+    private List<Request> extractTargetLinksByExp(Page page, LinksExtractRule rule){
         List<Request> requests = new ArrayList<>();
+        List<Expression> expressions = rule.getExpressions();
 
-        if(expressions != null && !expressions.isEmpty()){
+        if (expressions != null && !expressions.isEmpty()) {
             Selectable linksSelectable = page.getHtml();
             try {
                 for (Expression expression : expressions) {
                     Method method = ReflectionUtils.findMethodWithSuperClass(linksSelectable.getClass(), expression.getExpressionType().getMethodName(), expression.getArgumentCount());
                     linksSelectable = (Selectable) method.invoke(linksSelectable, expression.getArguments());
                 }
-                linksSelectable.all().stream().forEach(url -> requests.add(new Request(url).putExtra(ExtractUtils.SOURCE_REQUEST_URL_STR, page.getUrl().toString())));
+                linksSelectable.all().stream().forEach(url -> requests.add(this.getRequest(url, page, rule)));
             } catch (InvocationTargetException | IllegalAccessException e) {
                 this.logger.warn("初始化页面Url出错", e);
             }
@@ -75,8 +101,31 @@ public abstract class CommonPageProcessor implements PageProcessor {
         return requests;
     }
 
-    private Request getRequest(String url, String sourceUrl){
-        return new Request(url).putExtra(ExtractUtils.SOURCE_REQUEST_URL_STR, sourceUrl);
+    private Request getRequest(String url, Page page, LinksExtractRule rule){
+        Request request = new Request(url);
+        request.putExtra(ExtractUtils.SOURCE_REQ_URL_STR, page.getUrl().toString());
+        request.setMethod(rule.getRequestMethod());
+        int curDepth = this.getCurDepth(page);
+        if(rule.getRequestParams() != null && rule.getRequestParams().length > 0){
+            NameValuePair[] nameValuePairs = ExtractUtils.getExtraRequestParams(rule.getRequestParams(), rule.getRequestParamsExtra(), curDepth);
+            request.putExtra(ExtractUtils.REQUEST_PARAMS_STR, nameValuePairs);
+            //因为GET方法WebMagic默认没添加参数，所以把参数拼在Url后面
+            if(rule.getRequestMethod().equals(HttpConstant.Method.GET)){
+                request.setUrl(ExtractUtils.getUrlByParamsMap(url, nameValuePairs));
+            }
+        }
+        request.putExtra(ExtractUtils.REQUEST_DEPTH_STR, curDepth + 1);
+        return request;
+    }
+
+    int getCurDepth(Page page){
+        int depth = 1;
+        Request request = page.getRequest();
+        if(request.getExtra(ExtractUtils.REQUEST_DEPTH_STR) != null && StringUtils.isNumeric(request.getExtra(ExtractUtils.REQUEST_DEPTH_STR).toString())){
+            depth = Integer.parseInt(request.getExtra(ExtractUtils.REQUEST_DEPTH_STR).toString());
+        }
+
+        return depth;
     }
 
     void addUrlField(Map<String, Object> fields, Page page){

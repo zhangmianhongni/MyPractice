@@ -1,5 +1,7 @@
 package model;
 
+import constant.ExpressionType;
+import constant.FieldSourceType;
 import us.codecraft.webmagic.selector.JsonPathSelector;
 import us.codecraft.webmagic.selector.Selector;
 import static us.codecraft.webmagic.selector.Selectors.*;

@@ -1,10 +1,16 @@
-package example.detail;
+package example.api;
 
 import constant.ExpressionType;
+import constant.ExtractType;
 import constant.FieldSourceType;
-import model.*;
+import model.Expression;
+import model.ExtractField;
+import model.LinksExtractRule;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
+import processor.ApiPageProcessor;
 import processor.DetailPageProcessor;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
@@ -12,72 +18,68 @@ import us.codecraft.webmagic.monitor.SpiderMonitor;
 import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mian on 2017/1/12.
  */
-public class Baozou {
+public class DoubanTop250 {
     public static void main(String[] args) throws JMException {
         List<ExtractField> extractFields = new ArrayList<>();
 
         ExtractField field = new ExtractField();
-        field.setFieldName("Author");
-        field.setFieldSourceType(FieldSourceType.Html);
-        field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//a[@class='article-author-name']/text()");
-        field.setNeed(true);
-
+        field.setFieldName("title");
+        field.setFieldSourceType(FieldSourceType.Json);
+        field.setExpressionValue("$.title");
         extractFields.add(field);
 
         field = new ExtractField();
-        field.setFieldName("Content");
-        field.setFieldSourceType(FieldSourceType.Html);
-        field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//div[@class='article article-text']/@data-text");
-
+        field.setFieldName("genres");
+        field.setFieldSourceType(FieldSourceType.Json);
+        field.setExpressionValue("$.genres");
         extractFields.add(field);
 
         field = new ExtractField();
-        field.setFieldName("Time");
-        field.setFieldSourceType(FieldSourceType.Html);
-        field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//span[@class='article-date']/text()");
-
+        field.setFieldName("averageRating");
+        field.setFieldSourceType(FieldSourceType.Json);
+        field.setExpressionValue("$.rating.average");
         extractFields.add(field);
 
 
 
-        DetailPageProcessor processor = new DetailPageProcessor();
+        ApiPageProcessor processor = new ApiPageProcessor("$.subjects");
         processor.setRetryTimes(3);
         processor.setSleepTime(100);
         processor.setTimeOut(10000);
 
-        List<Expression> expressions = new ArrayList<>();
         List<LinksExtractRule> rules = new ArrayList<>();
 
-        Expression expression = new Expression();
-        expression.setExpressionType(ExpressionType.Css);
-        expression.setArguments(new Object[] {"div.pager-content"});
-        expressions.add(expression);
+        Integer onceCount = 10;
+        NameValuePair[] nameValuePairs = {
+                new BasicNameValuePair("start", "0"),
+                new BasicNameValuePair("count", onceCount.toString()),
+        };
 
-        expression = new Expression();
-        expression.setExpressionType(ExpressionType.Links);
-        expressions.add(expression);
+        Map<String, String> extraValues = new HashMap<>();
+        extraValues.put("start", onceCount.toString());
 
         LinksExtractRule rule = new LinksExtractRule();
         rule.setName("paged");
-        rule.setExpressions(expressions);
+        rule.setExtractType(ExtractType.Api);
+        rule.setRequestParams(nameValuePairs);
+        rule.setRequestParamsExtra(extraValues);
         rules.add(rule);
 
         processor.setTargetRequestRules(rules);
-
         processor.setExtractFields(extractFields);
 
         LocalDateTime start = LocalDateTime.now();
         Spider spider = Spider.create(processor)
-                //从"http://baozoumanhua.com/text"开始抓
-                .addUrl("http://baozoumanhua.com/text")
+                //从"https://api.douban.com/v2/movie/top250"开始抓
+                .addUrl("https://api.douban.com/v2/movie/top250?start=0&count=10")
                 .addPipeline(new MultiConsolePipeline())
                 //保存到JSON文件
                 .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))

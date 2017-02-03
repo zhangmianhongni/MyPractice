@@ -1,10 +1,15 @@
 package example.listWithDetail;
 
+import constant.ExpressionType;
+import constant.FieldSourceType;
 import model.*;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
 import pipeline.MultiMysqlPipeline;
 import processor.ListWithDetailPageProcessor;
+import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
 
@@ -12,7 +17,9 @@ import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mian on 2017/1/12.
@@ -20,7 +27,7 @@ import java.util.List;
 public class Baozou {
     public static void main(String[] args) throws JMException {
 
-        List<ExtractField> extractFields = new ArrayList<ExtractField>();
+        List<ExtractField> extractFields = new ArrayList<>();
 
         ExtractField field = new ExtractField();
         field.setFieldName("Author");
@@ -99,13 +106,14 @@ public class Baozou {
         rules.add(rule);
 
         processor.setTargetRequestRules(rules);
-
         processor.setExtractFields(extractFields);
+
+        String url = "http://baozoumanhua.com/text/fresh?page=1";
 
         LocalDateTime start = LocalDateTime.now();
         Spider spider = Spider.create(processor)
                 //从"http://baozoumanhua.com/text"开始抓
-                .addUrl("http://baozoumanhua.com/text/fresh?page=1")
+                .addUrl(url)
                 .addPipeline(new MultiConsolePipeline())
                 //保存到JSON文件
                 .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))

@@ -1,5 +1,7 @@
 package example.list;
 
+import constant.ExpressionType;
+import constant.FieldSourceType;
 import model.*;
 import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
@@ -18,7 +20,7 @@ import java.util.List;
  */
 public class Baozou {
     public static void main(String[] args) throws JMException {
-        List<ExtractField> extractFields = new ArrayList<ExtractField>();
+        List<ExtractField> extractFields = new ArrayList<>();
 
         ExtractField field = new ExtractField();
         field.setFieldName("Author");

@@ -1,5 +1,9 @@
-package model;
+package constant;
 
+/**
+ * Created by mian on 2017/1/23.
+ * 表达式类型
+ */
 public enum ExpressionType {
     XPath("xpath"),
     Css("css"),

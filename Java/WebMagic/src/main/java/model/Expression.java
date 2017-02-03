@@ -1,5 +1,7 @@
 package model;
 
+import constant.ExpressionType;
+
 /**
  * Created by mian on 2017/1/23.
  * 表达式实体类

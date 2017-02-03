@@ -26,7 +26,7 @@ public class MultiMysqlPipeline implements Pipeline {
                 Map<String, Object> result = results.get(i);
                 if(result != null && result.size() > 0) {
                     String url = result.get("url").toString();
-                    String sourceUrl = result.get(ExtractUtils.SOURCE_REQUEST_URL_STR).toString();
+                    String sourceUrl = result.get(ExtractUtils.SOURCE_REQ_URL_STR).toString();
                     String author = result.get("Author").toString();
                     String content = result.get("Content").toString();
                     String time = result.get("Time").toString();

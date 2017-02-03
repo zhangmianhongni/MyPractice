@@ -15,11 +15,11 @@ public class DetailPageProcessor extends CommonPageProcessor {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public DetailPageProcessor(){
-        this.site = Site.me();
+        super();
     }
 
-    public void process(Page page) {
-
+    @Override
+    public void doProcess(Page page) {
         super.addUrlField(page.getResultItems().getAll(), page);
         super.extractTargetLinks(page);
 

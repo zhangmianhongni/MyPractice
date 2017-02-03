@@ -1,14 +1,13 @@
 package utils;
 
-import model.ExpressionType;
+import constant.ExpressionType;
 import model.ExtractField;
-import model.FieldSourceType;
+import constant.FieldSourceType;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.ResultItems;
-import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;
 import us.codecraft.webmagic.selector.Selector;
 
