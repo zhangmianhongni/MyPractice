@@ -7,6 +7,8 @@ import us.codecraft.webmagic.Page;
 import utils.ExtractUtils;
 import utils.ResultUtils;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * 通用页面抽取处理类
  * PageProcessor的定制分为三个部分，分别是爬虫的配置、页面元素的抽取和链接的发现
@@ -15,6 +17,8 @@ import utils.ResultUtils;
 public class ListWithDetailPageProcessor extends CommonPageProcessor {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private String listLinksRegExp;
+
+    private final AtomicLong pipelinePageCount = new AtomicLong(0);
 
     public ListWithDetailPageProcessor(String listLinksRegExp){
         super();
@@ -33,6 +37,12 @@ public class ListWithDetailPageProcessor extends CommonPageProcessor {
             }
             super.addUrlField(page.getResultItems().getAll(), page);
             ResultUtils.extractDetailFields(page, this.extractFields);
+            pipelinePageCount.incrementAndGet();
         }
+    }
+
+    @Override
+    public long getPipelinePageCount() {
+        return pipelinePageCount.get();
     }
 }

@@ -1,5 +1,7 @@
 package pipeline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
@@ -20,7 +22,6 @@ public class MultiConsolePipeline implements Pipeline {
         if(results != null) {
             for (int i = 0; i < results.size(); i++) {
                 String mark = results.size() == 1 ? "" : "-" + i;
-                System.out.println("get page: " + resultItems.getRequest().getUrl() + mark);
                 Map<String, Object> result = results.get(i);
                 if(result !=null && result.size() > 0) {
                     for (Map.Entry<String, Object> entry : result.entrySet()) {

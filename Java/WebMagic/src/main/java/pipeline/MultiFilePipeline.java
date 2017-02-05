@@ -54,7 +54,7 @@ public class MultiFilePipeline extends FilePersistentBase implements Pipeline {
                                 Map.Entry entry = (Map.Entry) var5.next();
                                 if (entry.getValue() instanceof Iterable) {
                                     Iterable value = (Iterable) entry.getValue();
-                                    e.println((String) entry.getKey() + ":");
+                                    e.println(entry.getKey() + ":");
                                     Iterator var8 = value.iterator();
 
                                     while (var8.hasNext()) {
@@ -62,7 +62,7 @@ public class MultiFilePipeline extends FilePersistentBase implements Pipeline {
                                         e.println(o);
                                     }
                                 } else {
-                                    e.println((String) entry.getKey() + ":\t" + entry.getValue());
+                                    e.println(entry.getKey() + ":\t" + entry.getValue());
                                 }
                             }
 

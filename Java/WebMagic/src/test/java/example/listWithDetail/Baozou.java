@@ -9,6 +9,7 @@ import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
 import pipeline.MultiMysqlPipeline;
 import processor.ListWithDetailPageProcessor;
+import spider.CommonSpider;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
@@ -16,13 +17,11 @@ import us.codecraft.webmagic.monitor.SpiderMonitor;
 import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by mian on 2017/1/12.
+ * 暴走漫画 http://baozoumanhua.com/text/fresh?page=1
  */
 public class Baozou {
     public static void main(String[] args) throws JMException {
@@ -34,9 +33,7 @@ public class Baozou {
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
         field.setExpressionValue("//[@class='article-author-name']/text()");
-        //field.setMulti(true);
         field.setNeed(true);
-
         extractFields.add(field);
 
         field = new ExtractField();
@@ -44,8 +41,6 @@ public class Baozou {
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
         field.setExpressionValue("//div[@class='article article-text']/@data-text");
-        //field.setMulti(true);
-
         extractFields.add(field);
 
         field = new ExtractField();
@@ -53,8 +48,6 @@ public class Baozou {
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
         field.setExpressionValue("//span[@class='article-date']/text()");
-        //field.setMulti(true);
-
         extractFields.add(field);
 
 
@@ -108,14 +101,10 @@ public class Baozou {
         processor.setTargetRequestRules(rules);
         processor.setExtractFields(extractFields);
 
-        String url = "http://baozoumanhua.com/text/fresh?page=1";
-
-        LocalDateTime start = LocalDateTime.now();
-        Spider spider = Spider.create(processor)
-                //从"http://baozoumanhua.com/text"开始抓
-                .addUrl(url)
+        String startUrl = "http://baozoumanhua.com/text/fresh?page=1";
+        CommonSpider spider = CommonSpider.create(processor);
+        spider.addUrl(startUrl)
                 .addPipeline(new MultiConsolePipeline())
-                //保存到JSON文件
                 .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))
                 .addPipeline(new MultiMysqlPipeline())
                 .thread(5);
@@ -123,8 +112,18 @@ public class Baozou {
         SpiderMonitor.instance().register(spider);
         spider.run();
 
+        System.out.println("请求页面数量：" + spider.getPageCount());
+        System.out.println("请求成功页面数量：" + ((SpiderMonitor.MonitorSpiderListener)spider.getSpiderListeners().get(0)).getSuccessCount());
+        System.out.println("请求失败页面数量：" + ((SpiderMonitor.MonitorSpiderListener)spider.getSpiderListeners().get(0)).getErrorCount());
+        System.out.println("请求失败页面：" + ((SpiderMonitor.MonitorSpiderListener)spider.getSpiderListeners().get(0)).getErrorUrls());
+
+
+        System.out.println("Processor处理页面数量：" + spider.getProcessPageCount());
+        System.out.println("Pipeline处理页面数量：" + spider.getPipelinePageCount());
+
         LocalDateTime end = LocalDateTime.now();
+        LocalDateTime start = LocalDateTime.ofInstant(spider.getStartTime().toInstant(), TimeZone.getDefault().toZoneId());
         Duration duration = Duration.between(start, end);
-        System.out.println(duration.getSeconds());
+        System.out.println("爬虫捉取时间：" + duration.getSeconds() + "秒");
     }
 }

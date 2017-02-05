@@ -8,11 +8,11 @@ import java.util.regex.Pattern;
  */
 public class RegexTest {
     public static void main(String[] args) {
-        String URL_LIST = "http://baozoumanhua\\.com/text";
-        String URL_POST = "http://baozoumanhua\\.com/articles/\\d+";
+        String URL_LIST = "http://www\\.51ztzj\\.com/dbizhi/category\\w+.htm";
+        String URL_POST = "http://www\\.51ztzj\\.com/desk/\\d+.htm";
 
-        String text_list = "http://baozoumanhua.com/text";
-        String text_post = "http://baozoumanhua.com/articles/39830319";
+        String text_list = "http://www.51ztzj.com/dbizhi/category_25_1.htm";
+        String text_post = "http://www.51ztzj.com/desk/53454.htm";
         int group = 0;
 
         Pattern regex = Pattern.compile(URL_LIST, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);

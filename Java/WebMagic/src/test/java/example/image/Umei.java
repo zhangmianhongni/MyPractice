@@ -1,87 +1,113 @@
-package example.detail;
+package example.image;
 
 import constant.ExpressionType;
 import constant.FieldSourceType;
-import model.*;
+import model.Expression;
+import model.ExtractField;
+import model.LinksExtractRule;
 import pipeline.ImagePipeline;
 import pipeline.MultiConsolePipeline;
-import pipeline.MultiJsonFilePipeline;
 import pipeline.MultiMysqlPipeline;
-import processor.DetailPageProcessor;
+import processor.ListWithDetailPageProcessor;
 import spider.CommonSpider;
-import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
+import utils.ExtractUtils;
 
 import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by mian on 2017/1/12.
+ * 优美 https://www.umei.cc/tags/juru_1.htm
  */
-public class Baozou {
+public class Umei {
     public static void main(String[] args) throws JMException {
+
         List<ExtractField> extractFields = new ArrayList<>();
 
         ExtractField field = new ExtractField();
-        field.setFieldName("Author");
+        field.setFieldName(ExtractUtils.IMAGE_NAME_STR);
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//a[@class='article-author-name']/text()");
+        field.setExpressionValue("//div[@class='ImageBody']//img/@alt");
         field.setNeed(true);
-
         extractFields.add(field);
 
         field = new ExtractField();
-        field.setFieldName("Content");
+        field.setFieldName(ExtractUtils.IMAGE_SOURCE_STR);
         field.setFieldSourceType(FieldSourceType.Html);
         field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//div[@class='article article-text']/@data-text");
-
-        extractFields.add(field);
-
-        field = new ExtractField();
-        field.setFieldName("Time");
-        field.setFieldSourceType(FieldSourceType.Html);
-        field.setExpressionType(ExpressionType.XPath);
-        field.setExpressionValue("//span[@class='article-date']/text()");
-
+        field.setExpressionValue("//div[@class='ImageBody']//img/@src");
         extractFields.add(field);
 
 
+        //列表链接正则表达式，用来判断是列表的链接还是详情页的链接
+        String listLinksRegExp = "https://www\\.umei\\.cc/tags/juru_\\d+.htm";
 
-        DetailPageProcessor processor = new DetailPageProcessor();
+        ListWithDetailPageProcessor processor = new ListWithDetailPageProcessor(listLinksRegExp);
         processor.setRetryTimes(3);
-        processor.setSleepTime(100);
-        processor.setTimeOut(10000);
+        processor.setRetrySleepTime(500);
+        processor.setSleepTime(1000);
+        processor.setTimeOut(30000);
+        processor.setCycleRetryTimes(2);
 
-        List<Expression> expressions = new ArrayList<>();
         List<LinksExtractRule> rules = new ArrayList<>();
 
+        //详情页面链接规则
+        List<Expression> expressions = new ArrayList<>();
         Expression expression = new Expression();
         expression.setExpressionType(ExpressionType.Css);
-        expression.setArguments(new Object[] {"div.pager-content"});
+        expression.setArguments(new Object[] {"div.TypeList"});
         expressions.add(expression);
 
         expression = new Expression();
         expression.setExpressionType(ExpressionType.Links);
         expressions.add(expression);
 
+        expression = new Expression();
+        expression.setExpressionType(ExpressionType.Regex);
+        expressions.add(expression);
+        expression.setArguments(new Object[] {"https://www\\.umei\\.cc/meinvtupian/\\w+/\\d+.htm"});
+
         LinksExtractRule rule = new LinksExtractRule();
+        rule.setName("detail");
+        rule.setExpressions(expressions);
+        rules.add(rule);
+
+        //分页链接规则
+        expressions = new ArrayList<>();
+        expression = new Expression();
+        expression.setExpressionType(ExpressionType.Css);
+        expression.setArguments(new Object[] {"div.NewPages"});
+        expressions.add(expression);
+
+        expression = new Expression();
+        expression.setExpressionType(ExpressionType.Links);
+        expressions.add(expression);
+
+        expression = new Expression();
+        expression.setExpressionType(ExpressionType.Regex);
+        expressions.add(expression);
+        expression.setArguments(new Object[] {"https://www\\.umei\\.cc/tags/juru_\\d+.htm"});
+
+        rule = new LinksExtractRule();
         rule.setName("paged");
         rule.setExpressions(expressions);
         rules.add(rule);
 
         processor.setTargetRequestRules(rules);
-
         processor.setExtractFields(extractFields);
 
-        String startUrl = "http://baozoumanhua.com/text";
+        String startUrl = "https://www.umei.cc/tags/juru_1.htm";
         CommonSpider spider = CommonSpider.create(processor);
         spider.addUrl(startUrl)
                 .addPipeline(new MultiConsolePipeline())
-                .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))
+                //保存图片文件
+                .addPipeline(new ImagePipeline("D:\\webmagic\\"))
                 .thread(5);
 
         SpiderMonitor.instance().register(spider);

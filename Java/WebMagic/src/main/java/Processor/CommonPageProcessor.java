@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 通用页面抽取处理类
@@ -34,6 +35,7 @@ import java.util.Set;
  */
 public abstract class CommonPageProcessor implements PageProcessor {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    final AtomicLong processPageCount = new AtomicLong(0);
 
     Site site;
     List<ExtractField> extractFields;
@@ -54,6 +56,7 @@ public abstract class CommonPageProcessor implements PageProcessor {
         this.logger.debug("请求深度 {}", this.getCurDepth(page));
         this.logger.debug("请求链接 {}", page.getUrl().toString());
         this.doProcess(page);
+        processPageCount.incrementAndGet();
     }
 
     abstract void doProcess(Page page);
@@ -135,6 +138,14 @@ public abstract class CommonPageProcessor implements PageProcessor {
     //如果捉取的是列表页面，设置为true
     void setMultiItemsPage(Page page, boolean isMultiItems){
         page.putField(ResultUtils.IS_MULTI_ITEMS_STR, isMultiItems);
+    }
+
+    public long getProcessPageCount() {
+        return processPageCount.get();
+    }
+
+    public long getPipelinePageCount(){
+        return processPageCount.get();
     }
 
 

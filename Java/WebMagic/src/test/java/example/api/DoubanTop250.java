@@ -12,19 +12,19 @@ import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
 import processor.ApiPageProcessor;
 import processor.DetailPageProcessor;
+import spider.CommonSpider;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
+import utils.ExtractUtils;
 
 import javax.management.JMException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by mian on 2017/1/12.
+ * 豆瓣电影TOP250
  */
 public class DoubanTop250 {
     public static void main(String[] args) throws JMException {
@@ -76,20 +76,30 @@ public class DoubanTop250 {
         processor.setTargetRequestRules(rules);
         processor.setExtractFields(extractFields);
 
-        LocalDateTime start = LocalDateTime.now();
-        Spider spider = Spider.create(processor)
-                //从"https://api.douban.com/v2/movie/top250"开始抓
-                .addUrl("https://api.douban.com/v2/movie/top250?start=0&count=10")
+        String startUrl = "https://api.douban.com/v2/movie/top250";
+        startUrl = ExtractUtils.getUrlByParamsMap(startUrl, nameValuePairs);
+
+        CommonSpider spider = CommonSpider.create(processor);
+        spider.addUrl(startUrl)
                 .addPipeline(new MultiConsolePipeline())
-                //保存到JSON文件
                 .addPipeline(new MultiJsonFilePipeline("D:\\webmagic\\"))
                 .thread(5);
 
         SpiderMonitor.instance().register(spider);
         spider.run();
 
+        System.out.println("请求页面数量：" + spider.getPageCount());
+        System.out.println("请求成功页面数量：" + ((SpiderMonitor.MonitorSpiderListener)spider.getSpiderListeners().get(0)).getSuccessCount());
+        System.out.println("请求失败页面数量：" + ((SpiderMonitor.MonitorSpiderListener)spider.getSpiderListeners().get(0)).getErrorCount());
+        System.out.println("请求失败页面：" + ((SpiderMonitor.MonitorSpiderListener)spider.getSpiderListeners().get(0)).getErrorUrls());
+
+
+        System.out.println("Processor处理页面数量：" + spider.getProcessPageCount());
+        System.out.println("Pipeline处理页面数量：" + spider.getPipelinePageCount());
+
         LocalDateTime end = LocalDateTime.now();
+        LocalDateTime start = LocalDateTime.ofInstant(spider.getStartTime().toInstant(), TimeZone.getDefault().toZoneId());
         Duration duration = Duration.between(start, end);
-        System.out.println(duration.getSeconds());
+        System.out.println("爬虫捉取时间：" + duration.getSeconds() + "秒");
     }
 }
