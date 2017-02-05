@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 public class RegexTest {
     public static void main(String[] args) {
         String URL_LIST = "http://www\\.51ztzj\\.com/dbizhi/category\\w+.htm";
-        String URL_POST = "http://www\\.51ztzj\\.com/desk/\\d+.htm";
+        String URL_POST = "https://www\\.umei\\.cc/[/\\w\\.-]*/\\d+.htm";
 
         String text_list = "http://www.51ztzj.com/dbizhi/category_25_1.htm";
-        String text_post = "http://www.51ztzj.com/desk/53454.htm";
+        String text_post = "https://www.umei.cc/p/gaoqing/rihan/20150909184924.htm";
         int group = 0;
 
         Pattern regex = Pattern.compile(URL_LIST, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);

@@ -51,9 +51,8 @@ public class Umei {
         ListWithDetailPageProcessor processor = new ListWithDetailPageProcessor(listLinksRegExp);
         processor.setRetryTimes(3);
         processor.setRetrySleepTime(500);
-        processor.setSleepTime(1000);
-        processor.setTimeOut(30000);
-        processor.setCycleRetryTimes(2);
+        processor.setSleepTime(200);
+        processor.setTimeOut(10000);
 
         List<LinksExtractRule> rules = new ArrayList<>();
 
@@ -71,7 +70,7 @@ public class Umei {
         expression = new Expression();
         expression.setExpressionType(ExpressionType.Regex);
         expressions.add(expression);
-        expression.setArguments(new Object[] {"https://www\\.umei\\.cc/meinvtupian/\\w+/\\d+.htm"});
+        expression.setArguments(new Object[] {"https://www\\.umei\\.cc/[/\\w\\.-]*/\\d+.htm"});
 
         LinksExtractRule rule = new LinksExtractRule();
         rule.setName("detail");
