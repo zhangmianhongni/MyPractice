@@ -1,18 +1,11 @@
 package example.api;
 
-import constant.ExtractType;
 import constant.FieldSourceType;
 import model.ExtractField;
-import model.LinksExtractRule;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import pipeline.ImagePipeline;
 import pipeline.MultiConsolePipeline;
 import pipeline.MultiJsonFilePipeline;
-import pipeline.MultiMysqlPipeline;
 import processor.ApiPageProcessor;
 import spider.CommonSpider;
-import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.monitor.SpiderMonitor;
 
 import javax.management.JMException;

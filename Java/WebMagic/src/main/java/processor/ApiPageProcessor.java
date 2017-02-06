@@ -5,9 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
-import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Json;
-import us.codecraft.webmagic.selector.Selector;
 import utils.ResultUtils;
 
 import java.util.ArrayList;
