@@ -21,7 +21,7 @@ public class ExtractUtils {
     public static String IMAGE_NAME_STR = "imageName";
     public static String IMAGE_SOURCE_STR = "imageSource";
 
-
+    
     public static Selectable getSelectable(Page page, FieldSourceType fieldSourceType){
         Selectable extractContent = null;
         if(fieldSourceType == FieldSourceType.Html){
