@@ -7,6 +7,7 @@ import us.codecraft.webmagic.Page;
 import utils.ExtractUtils;
 import utils.ResultUtils;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -31,9 +32,11 @@ public class ListWithDetailPageProcessor extends CommonPageProcessor {
         if (page.getUrl().regex(this.listLinksRegExp).match()) {
             super.extractTargetLinks(page);
         } else {
-            String sourceUrl = page.getRequest().getExtra(ExtractUtils.SOURCE_REQ_URL_STR).toString();
-            if(StringUtils.isNotEmpty(sourceUrl)){
-                page.putField(ExtractUtils.SOURCE_REQ_URL_STR, sourceUrl);
+            if(Objects.nonNull(page.getRequest().getExtra(ExtractUtils.SOURCE_REQ_URL_STR))) {
+                String sourceUrl = page.getRequest().getExtra(ExtractUtils.SOURCE_REQ_URL_STR).toString();
+                if (StringUtils.isNotEmpty(sourceUrl)) {
+                    page.putField(ExtractUtils.SOURCE_REQ_URL_STR, sourceUrl);
+                }
             }
             super.addUrlField(page.getResultItems().getAll(), page);
             ResultUtils.extractDetailFields(page, this.extractFields);
