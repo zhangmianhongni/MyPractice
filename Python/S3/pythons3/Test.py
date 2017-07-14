@@ -9,6 +9,9 @@ buckets = conn.get_all_buckets()
 print buckets
 
 bucket = conn.get_bucket("bingocctest2")
-print bucket.get_all_keys()
-key = bucket.get_key("B6C9614CB48641EB8141E7DB8CFC16DC_S_T_RDB_DA_1493387655438/aa/B6C9614CB48641EB8141E7DB8CFC16DC_S_T_RDB_DA_14933876554382017_04_29.txt")
-print key.get_contents_as_string()
+key_list = bucket.list(prefix="bingocc")
+print list(key_list)
+print len(list(key_list))
+
+key_a = bucket.get_key("B6C9614CB48641EB8141E7DB8CFC16DC_S_T_RDB_DA_1493387655438/aa/B6C9614CB48641EB8141E7DB8CFC16DC_S_T_RDB_DA_14933876554382017_04_29.txt")
+print key_a.get_contents_as_string()
